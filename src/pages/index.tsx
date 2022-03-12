@@ -1,6 +1,16 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { GetStaticProps } from 'next';
 
+import Prismic from '@prismicio/client';
+
 import { FaCalendar, FaUser } from 'react-icons/fa';
+
+import Link from 'next/link';
+
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
@@ -26,7 +36,7 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-export default function Home(): JSX.Element {
+export default function Home({ postsPagination }: HomeProps): JSX.Element {
   return (
     <>
       <div className={styles.container}>
@@ -34,32 +44,23 @@ export default function Home(): JSX.Element {
           <img src="/icons/logo_spacetraveling.svg" alt="logo" />
         </div>
         <div className={styles.content}>
-          <div className={styles.postContent}>
-            <h1>Como utilizar hooks</h1>
-            <p>Pensando em sincronização em vez de ciclos de vida.</p>
-            <div className={styles.postInfo}>
-              <div className={styles.postDate}>
-                <FaCalendar /> 15 Mar 2021
+          {postsPagination?.results.map(post => (
+            <Link href={`/posts/${post.uid}`}>
+              <div className={styles.postContent} key={post.uid}>
+                <h1>{post.data.title}</h1>
+                <p>{post.data.subtitle}</p>
+                <div className={styles.postInfo}>
+                  <div className={styles.postDate}>
+                    <FaCalendar /> {post.first_publication_date}
+                  </div>
+                  <div className={styles.postAuthor}>
+                    <FaUser />
+                    {post.data.author}
+                  </div>
+                </div>
               </div>
-              <div className={styles.postAuthor}>
-                <FaUser />
-                Joseph Oliveira
-              </div>
-            </div>
-          </div>
-          <div className={styles.postContent}>
-            <h1>Como utilizar hooks</h1>
-            <p>Pensando em sincronização em vez de ciclos de vida.</p>
-            <div className={styles.postInfo}>
-              <div className={styles.postDate}>
-                <FaCalendar /> 15 Mar 2021
-              </div>
-              <div className={styles.postAuthor}>
-                <FaUser />
-                Joseph Oliveira
-              </div>
-            </div>
-          </div>
+            </Link>
+          ))}
         </div>
         <div className={styles.showMore}>
           <a>Carregar mais posts</a>
@@ -69,9 +70,35 @@ export default function Home(): JSX.Element {
   );
 }
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient();
-//   // const postsResponse = await prismic.query(TODO);
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient();
+  const postsResponse = await prismic.query(
+    Prismic.predicates.at('document.type', 'post')
+  );
 
-//   // TODO
-// };
+  const posts = postsResponse.results.map(post => ({
+    uid: post.uid,
+    first_publication_date: format(
+      new Date(post.first_publication_date),
+      'dd MMM yyyy',
+      {
+        locale: ptBR,
+      }
+    ),
+    data: {
+      title: post.data.title,
+      subtitle: post.data.subtitle,
+      author: post.data.author,
+    },
+  }));
+
+  return {
+    props: {
+      postsPagination: {
+        next_page: postsResponse.next_page,
+        results: posts,
+      },
+    },
+    revalidate: 60 * 60 * 24, // 1 day
+  };
+};
