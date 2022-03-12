@@ -62,9 +62,11 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
             </Link>
           ))}
         </div>
-        <div className={styles.showMore}>
-          <a>Carregar mais posts</a>
-        </div>
+        {postsPagination.next_page && (
+          <div className={styles.showMore}>
+            <a>Carregar mais posts</a>
+          </div>
+        )}
       </div>
     </>
   );
