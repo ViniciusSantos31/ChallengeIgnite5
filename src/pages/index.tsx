@@ -1,20 +1,15 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { GetStaticProps } from 'next';
-
 import Prismic from '@prismicio/client';
-
-import { FaCalendar, FaUser } from 'react-icons/fa';
-
-import Link from 'next/link';
-
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
-
+import { GetStaticProps } from 'next';
+import Link from 'next/link';
+import { useState } from 'react';
+import { FaCalendar, FaUser } from 'react-icons/fa';
 import { getPrismicClient } from '../services/prismic';
-
-import commonStyles from '../styles/common.module.scss';
-
 import styles from './home.module.scss';
 
 interface Post {
@@ -37,6 +32,16 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps): JSX.Element {
+  const [posts, setPosts] = useState<PostPagination>(postsPagination);
+  const loadMorePosts = async () => {
+    const response = await fetch(postsPagination.next_page).then(res => {
+      return res.json();
+    });
+    setPosts({
+      next_page: response.next_page,
+      results: [...posts.results, ...response.results],
+    });
+  };
   return (
     <>
       <div className={styles.container}>
@@ -44,9 +49,9 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
           <img src="/icons/logo_spacetraveling.svg" alt="logo" />
         </div>
         <div className={styles.content}>
-          {postsPagination?.results.map(post => (
-            <Link href={`/posts/${post.uid}`}>
-              <div className={styles.postContent} key={post.uid}>
+          {posts.results.map(post => (
+            <Link href={`/posts/${post.uid}`} key={post.uid}>
+              <div className={styles.postContent}>
                 <h1>{post.data.title}</h1>
                 <p>{post.data.subtitle}</p>
                 <div className={styles.postInfo}>
@@ -62,8 +67,8 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
             </Link>
           ))}
         </div>
-        {postsPagination.next_page && (
-          <div className={styles.showMore}>
+        {posts.next_page && (
+          <div className={styles.showMore} onClick={loadMorePosts}>
             <a>Carregar mais posts</a>
           </div>
         )}
@@ -75,7 +80,10 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
 export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query(
-    Prismic.predicates.at('document.type', 'post')
+    Prismic.predicates.at('document.type', 'post'),
+    {
+      pageSize: 1,
+    }
   );
 
   const posts = postsResponse.results.map(post => ({
