@@ -1,27 +1,4 @@
 // TODO
-.container {
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 4rem;
-  padding: 0 1rem;
-}
-
-.logoContainer {
-  width: 100%;
-  max-width: 700px;
-  display: flex;
-  margin-bottom: 2rem;
-}
-
-.content {
-  width: 100%;
-  max-width: 700px;
-  display: flex;
-  flex-direction: column;
-  margin-top: 2rem;
-}
 
 .postContent {
   h1 {
@@ -47,26 +24,6 @@
   }
 
   cursor: pointer;
-}
-
-.postInfo {
-  display: flex;
-  margin-top: 1.5rem;
-  align-items: center;
-  color: var(--info);
-}
-
-.postDate,
-.postAuthor {
-  display: flex;
-  align-items: center;
-  margin-right: 1.5rem;
-
-  svg {
-    width: 1.2rem;
-    height: 1.2rem;
-    margin-right: 0.5rem;
-  }
 }
 
 .showMore {

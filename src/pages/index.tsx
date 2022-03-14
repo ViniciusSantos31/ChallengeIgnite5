@@ -11,6 +11,8 @@ import { useState } from 'react';
 import { FaCalendar, FaUser } from 'react-icons/fa';
 import { getPrismicClient } from '../services/prismic';
 import styles from './home.module.scss';
+import commonStyles from '../styles/common.module.scss';
+import Header from '../components/Header';
 
 interface Post {
   uid?: string;
@@ -44,21 +46,19 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
   };
   return (
     <>
-      <div className={styles.container}>
-        <div className={styles.logoContainer}>
-          <img src="/icons/logo_spacetraveling.svg" alt="logo" />
-        </div>
-        <div className={styles.content}>
+      <div className={commonStyles.container}>
+        <Header />
+        <div className={commonStyles.content}>
           {posts.results.map(post => (
-            <Link href={`/posts/${post.uid}`} key={post.uid}>
+            <Link href={`/post/${post.uid}`} key={post.uid}>
               <div className={styles.postContent}>
                 <h1>{post.data.title}</h1>
                 <p>{post.data.subtitle}</p>
-                <div className={styles.postInfo}>
-                  <div className={styles.postDate}>
+                <div className={commonStyles.postInfo}>
+                  <div>
                     <FaCalendar /> {post.first_publication_date}
                   </div>
-                  <div className={styles.postAuthor}>
+                  <div>
                     <FaUser />
                     {post.data.author}
                   </div>
