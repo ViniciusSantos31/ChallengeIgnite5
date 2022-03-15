@@ -35,6 +35,12 @@ interface PostProps {
 
 export default function Post({ post }: PostProps): JSX.Element {
   const router = useRouter();
+
+  const allText = post.data.content.reduce((acc, curr) => {
+    return acc + RichText.asText(curr.body);
+  }, '');
+  const timeToRead = Math.ceil(allText.split(' ').length / 200);
+
   return (
     <>
       {!router.isFallback ? (
@@ -63,7 +69,8 @@ export default function Post({ post }: PostProps): JSX.Element {
                 {post?.data.author}
               </div>
               <div>
-                <FaClock />4 min
+                <FaClock />
+                {timeToRead} min
               </div>
             </div>
             <div className={styles.postContent}>
