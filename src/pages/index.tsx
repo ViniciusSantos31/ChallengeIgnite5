@@ -41,7 +41,24 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
     });
     setPosts({
       next_page: response.next_page,
-      results: [...posts.results, ...response.results],
+      results: [
+        ...posts.results,
+        ...response.results.map(post => ({
+          uid: post.uid,
+          first_publication_date: format(
+            new Date(post.first_publication_date),
+            'dd MMM yyyy',
+            {
+              locale: ptBR,
+            }
+          ),
+          data: {
+            title: post.data.title,
+            subtitle: post.data.subtitle,
+            author: post.data.author,
+          },
+        })),
+      ],
     });
   };
   return (
@@ -56,7 +73,16 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
                 <p>{post.data.subtitle}</p>
                 <div className={commonStyles.postInfo}>
                   <div>
-                    <FaCalendar /> {post.first_publication_date}
+                    <FaCalendar />{' '}
+                    <p>
+                      {format(
+                        new Date(post.first_publication_date),
+                        'dd MMM yyyy',
+                        {
+                          locale: ptBR,
+                        }
+                      )}
+                    </p>
                   </div>
                   <div>
                     <FaUser />
@@ -80,21 +106,12 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
 export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query(
-    Prismic.predicates.at('document.type', 'post'),
-    {
-      pageSize: 1,
-    }
+    Prismic.predicates.at('document.type', 'post')
   );
 
   const posts = postsResponse.results.map(post => ({
     uid: post.uid,
-    first_publication_date: format(
-      new Date(post.first_publication_date),
-      'dd MMM yyyy',
-      {
-        locale: ptBR,
-      }
-    ),
+    first_publication_date: post.first_publication_date,
     data: {
       title: post.data.title,
       subtitle: post.data.subtitle,
